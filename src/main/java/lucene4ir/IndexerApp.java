@@ -7,7 +7,7 @@ import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.store.FSDirectory;
 
-import javax.xml.bind.JAXB;
+import jakarta.xml.bind.JAXB;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -104,7 +104,7 @@ public class IndexerApp {
                 break;
             case COMMONCORE:
                 System.out.println("COMMON CORE");
-                di = new main.java.lucene4ir.indexer.CommonCoreDocumentIndexer(p.indexName, p.tokenFilterFile, p.recordPositions);
+                di = new CommonCoreDocumentIndexer(p.indexName, p.tokenFilterFile, p.recordPositions);
                 break;
 
             default:

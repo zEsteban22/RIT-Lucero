@@ -20,8 +20,8 @@ import lucene4ir.similarity.BM25LSimilarity;
 import lucene4ir.similarity.BM25Similarity;
 import lucene4ir.utils.TokenAnalyzerMaker;
 
-import javax.xml.bind.JAXB;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.JAXB;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import java.io.*;
 
 import static lucene4ir.RetrievalApp.SimModel.BM25;

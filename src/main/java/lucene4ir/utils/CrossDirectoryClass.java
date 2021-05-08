@@ -1,4 +1,4 @@
-package utils;
+package lucene4ir.utils;
 /*
 This Class is used to cross all files in a directory even within inner directories
  */

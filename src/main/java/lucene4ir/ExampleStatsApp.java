@@ -1,6 +1,6 @@
 package lucene4ir;
 
-import javax.xml.bind.JAXB;
+import jakarta.xml.bind.JAXB;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;

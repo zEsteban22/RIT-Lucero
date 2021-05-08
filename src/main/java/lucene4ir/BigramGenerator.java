@@ -9,7 +9,7 @@ import org.apache.lucene.index.*;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.BytesRef;
 
-import javax.xml.bind.JAXB;
+import jakarta.xml.bind.JAXB;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
