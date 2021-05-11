@@ -136,7 +136,7 @@ public class TRECWebDocumentIndexer extends DocumentIndexer {
                             while (elIterator.hasNext())
                                 dochdrBuilder.append(" ").append(elIterator.next().text());
                             dochdr=dochdrBuilder.toString();
-                            url=dochdrBuilder.toString().split(" ")[1];
+                            //url=dochdrBuilder.toString().split(" ")[1];
                         }
 
                         System.out.println("Content");
