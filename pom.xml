@@ -75,7 +75,11 @@
             <version>3.0.0</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api -->
-
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>1.7.2</version>
+        </dependency>
 
     </dependencies>
     <build>

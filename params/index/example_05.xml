@@ -1,5 +1,5 @@
 <tokenFilters>
-    <tokenizer>standard</tokenizer>
+    <tokenizer>stand</tokenizer>
     <tokenFilter>
         <name>lowercase</name>
     </tokenFilter>
