@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <retrievalParams>
     <indexName>index</indexName>
-    <queryFile>data/cacm/title.query</queryFile>
-    <maxResults>100</maxResults>
+    <queryFile>data/trec123/title.101-150.query</queryFile>
+    <maxResults>1000</maxResults>
     <model>bm25</model>
-    <b>0.75</b>
-    <resultFile>data/cacm/bm25_results.res</resultFile>
-    <tokenFilterFile>params/index/example_01.xml</tokenFilterFile>
-    <runTag>Fred</runTag>
+    <b>0.25</b>
+    <resultFile>data/trec123/bm25_trec2_ap.res</resultFile>
 </retrievalParams>
+

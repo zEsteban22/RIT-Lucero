@@ -5,6 +5,7 @@ import lucene4ir.utils.TokenAnalyzerMaker;
 import org.apache.commons.compress.compressors.z.ZCompressorInputStream;
 
 import org.apache.lucene.analysis.Analyzer;
+//import org.apache.lucene.codecs.simpletext.SimpleTextCodec;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
@@ -59,6 +60,7 @@ public class DocumentIndexer {
 
             IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
             iwc.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
+            //iwc.setCodec(new SimpleTextCodec());
             writer = new IndexWriter(dir, iwc);
 
         } catch (IOException e){

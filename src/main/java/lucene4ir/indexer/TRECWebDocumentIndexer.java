@@ -7,6 +7,7 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
+import org.apache.lucene.index.IndexableField;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -76,17 +77,19 @@ public class TRECWebDocumentIndexer extends DocumentIndexer {
 
     public Document createTRECWebDocument(String texto, String ref, String resumen, String title, String url) throws IOException{
         doc.clear();
-
+        /*
         StringBuilder constructor = new StringBuilder();
         String palabra = "";
         TokenStream tSTexto = analyzer.tokenStream("cuerpo", texto);
         CharTermAttribute caracter = tSTexto.addAttribute(CharTermAttribute.class);
         tSTexto.reset();
-        while (tSTexto.incrementToken()){
-            constructor.append(caracter.toString()).append(" ");
-        }
+        //while (tSTexto.incrementToken()){
+        //    constructor.append(caracter.toString()).append(" ");
+        //}
         //List<String> palabra = analyze();
-        String resultado = constructor.toString();
+        //String resultado = constructor.toString();
+         */
+
 
         titleField.setStringValue(title);
         textField.setStringValue(texto);
@@ -112,8 +115,6 @@ public class TRECWebDocumentIndexer extends DocumentIndexer {
             StringBuilder constructorBody = new StringBuilder();
             StringBuilder constructorRef = new StringBuilder();
             StringBuilder constructorTitulo = new StringBuilder();
-            StringBuilder constructorResumen = new StringBuilder();
-            StringBuilder constructorUrl = new StringBuilder();
 
             ListIterator<Element> iteradorBody = documentoHTML.getElementsByTag("p").listIterator();
             while (iteradorBody.hasNext())

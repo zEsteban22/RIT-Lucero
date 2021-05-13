@@ -5,6 +5,8 @@ import lucene4ir.utils.CrossDirectoryClass;
 import lucene4ir.indexer.*;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
 import jakarta.xml.bind.JAXB;
@@ -229,6 +231,23 @@ public class IndexerApp {
             System.exit(1);
         }
         indexer.finished();
+
+        //File indexdir = new File("index") ; // location of my index
+        try {
+            Directory directory = FSDirectory.open(Paths.get("index"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        IndexReader ireader = null; //ERROR NoSuchMethodError
+        try {
+            ireader = DirectoryReader.open(FSDirectory.open(Paths.get("index")));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+//IndexReader ireader = IndexReader.open(directory); //variation ERROR NoSuchMethodError
+        IndexSearcher isearcher = new IndexSearcher(ireader);
+
         System.out.println("Done building Index");
 
 

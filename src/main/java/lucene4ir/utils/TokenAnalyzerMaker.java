@@ -36,7 +36,7 @@ public class TokenAnalyzerMaker {
                 builder = CustomAnalyzer.builder();
             }
 
-            builder.withTokenizer(tokenFilters.getTokenizer(), "pattern", "[A-Za-zÁÉÍÓÚÜáéíóúüÑñ]");
+            builder.withTokenizer(tokenFilters.getTokenizer());
             for (lucene4ir.utils.TokenFilter filter : tokenFilters.getTokenFilters()) {
                 System.out.println("Token filter: " + filter.getName());
                 List<lucene4ir.utils.Param> params = filter.getParams();
