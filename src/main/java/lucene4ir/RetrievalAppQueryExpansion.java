@@ -14,7 +14,7 @@ import org.apache.lucene.search.similarities.*;
 import org.apache.lucene.search.similarities.LMSimilarity.CollectionModel;
 import org.apache.lucene.store.FSDirectory;
 
-import javax.xml.bind.JAXB;
+import jakarta.xml.bind.JAXB;
 import java.io.*;
 import java.util.Iterator;
 import java.util.Set;
@@ -135,7 +135,7 @@ public class RetrievalAppQueryExpansion {
         if (p.resultFile == null){
             p.resultFile = p.runTag+"_results.res";
         }
-
+        p.queryFile="data/query.txt";
         System.out.println("Path to index: " + p.indexName);
         System.out.println("Query File: " + p.queryFile);
         System.out.println("Result File: " + p.resultFile);
@@ -229,10 +229,8 @@ public class RetrievalAppQueryExpansion {
                         continue;
                     }
 
-                    Iterator<String> it = synonyms.iterator();
-
-                    while (it.hasNext()) {
-                        sb.append(it.next());
+                    for (String synonym : synonyms) {
+                        sb.append(synonym);
                         sb.append(" ");
                     }
 
@@ -295,7 +293,7 @@ public class RetrievalAppQueryExpansion {
         String retrievalParamFile = "";
 
         try {
-            retrievalParamFile = args[0];
+            retrievalParamFile = "params/qe_retrieval_params.xml";
         } catch (Exception e) {
             System.out.println(" caught a " + e.getClass() + "\n with message: " + e.getMessage());
             System.exit(1);

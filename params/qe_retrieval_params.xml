@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <retrievalParams>
-    <indexName>cacmindex</indexName>
-    <queryFile>data/cacm/title.query</queryFile>
+    <indexName>index</indexName>
+    <queryFile>data/query.txt</queryFile>
     <maxResults>1000</maxResults>
     <model>bm25</model>
     <b>0.75</b>
