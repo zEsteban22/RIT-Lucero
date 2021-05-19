@@ -35,6 +35,7 @@ public class IndexerApp {
     private enum DocumentModel {
         CACM, CLUEWEB, TRECNEWS, TRECCC, TRECAQUAINT, TRECWEB, TRECTIPSTER, PUBMED , COMMONCORE
     }
+    private final String DEFAULT_TOKENFILTERFILE="params/index/example_01.xml";
 
     private DocumentModel docModel;
 
@@ -179,6 +180,17 @@ public class IndexerApp {
         selectDocumentParser(docModel);
     }
 
+    public IndexerApp(String indexName, String fileList){
+        p=new IndexParams();
+        p.fileList=fileList;
+        p.indexName=indexName;
+        p.indexType="TRECWEB";
+        p.tokenFilterFile=DEFAULT_TOKENFILTERFILE;
+        p.recordPositions=true;
+        setDocParser(p.indexType);
+        selectDocumentParser(docModel);
+    }
+
     public void indexDocumentsFromFile(String filename){
         di.indexDocumentsFromFile(filename);
     }
@@ -190,20 +202,28 @@ public class IndexerApp {
             e.printStackTrace();
         }
         di.finished();
-
-
         try {
             IndexReader reader = DirectoryReader.open(FSDirectory.open(Paths.get(p.indexName)));
             long numDocs = reader.numDocs();
-            System.out.println("Number of docs indexed: " + numDocs);
-
-
+            System.out.println("Cantidad de documentos indexados: " + numDocs);
         } catch (IOException e) {
             e.printStackTrace();
-            System.exit(1);
         }
 
 
+    }
+
+    public static void run(String indexName,String fileList)throws Exception{
+        IndexerApp app=new IndexerApp(indexName,fileList);
+        try {
+            for (String f : app.readFileListFromFile()) {
+                System.out.println("Indexando archivo: " +  f);
+                app.indexDocumentsFromFile(f);
+            }
+        } catch (Exception e){
+            throw e;
+        }
+        app.finished();
     }
 
     public static void main(String []args) {

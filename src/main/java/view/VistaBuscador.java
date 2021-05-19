@@ -6,13 +6,13 @@ public class VistaBuscador extends JFrame{
     private JTextField textField1;
     private JButton consultarButton;
     private JButton volverButton;
-    private JPanel _;
-    private JFrame parent;
+    private JPanel _pane;
+
     public VistaBuscador(JFrame parent){
-        this.parent=parent;
+        super("Realizar consulta en un índice");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setVisible(true);
-        setContentPane(_);
+        setContentPane(_pane);
         setSize(440,150);
         volverButton.addActionListener((e)->{
             this.dispose();

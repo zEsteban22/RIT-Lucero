@@ -7,13 +7,13 @@ import java.awt.event.ActionListener;
 public class View extends JFrame {
     private JButton buscadorButton;
     private JButton indexadorButton;
-    private JPanel _;
+    private JPanel _pane;
 
     public View (){
         super("Information retrieval with Lucene.");
         setVisible(true);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setContentPane(_);
+        setContentPane(_pane);
         setSize(440,150);
         indexadorButton.addActionListener(new ActionListener() {
             @Override
