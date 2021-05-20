@@ -3,9 +3,14 @@ package lucene4ir;
 
 import lucene4ir.utils.CrossDirectoryClass;
 import lucene4ir.indexer.*;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
@@ -247,6 +252,20 @@ public class IndexerApp {
         }
 //IndexReader ireader = IndexReader.open(directory); //variation ERROR NoSuchMethodError
         IndexSearcher isearcher = new IndexSearcher(ireader);
+
+        QueryParser parser = new QueryParser("texto", new StandardAnalyzer());
+        try {
+            Query query = parser.parse("y");
+            try {
+                TopDocs resultados = isearcher.search(query, 1);
+                int i = 0;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            int i = 0;
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
 
         System.out.println("Done building Index");
 

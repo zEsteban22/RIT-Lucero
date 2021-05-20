@@ -1,13 +1,8 @@
+
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <tokenFilters>
     <tokenizer>whitespace</tokenizer>
     <tokenFilter>
-        <name>asciifolding</name>
+        <name>lowercase</name>
     </tokenFilter>
-<tokenFilter>
-    <name>lowercase</name>
-</tokenFilter>
-<tokenFilter>
-    <name>snowballporter</name>
-</tokenFilter>
 </tokenFilters>

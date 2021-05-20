@@ -1,8 +1,12 @@
 package lucene4ir.indexer;
 
+import lucene4ir.Analizadores;
+import lucene4ir.Limpiador;
 import lucene4ir.Lucene4IRConstants;
-import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.*;
+import org.apache.lucene.analysis.snowball.SnowballFilter;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
+import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StringField;
@@ -11,8 +15,10 @@ import org.apache.lucene.index.IndexableField;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.tartarus.snowball.ext.SpanishStemmer;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.zip.GZIPInputStream;
@@ -24,13 +30,16 @@ import java.util.zip.GZIPInputStream;
  */
 public class TRECWebDocumentIndexer extends DocumentIndexer {
 
+    private Analyzer analizador;
 
-    private Field textField;
-    private Field refField;
-    private Field titleField;
-    private Field resumenField;
-    private Field urlField;
-    //private Field dochdrField;
+    private TextField textField;
+    private TextField refField;
+    private TextField titleField;
+    private TextField resumenField;
+    private TextField urlField;
+
+
+
     private Document doc;
 
     private static String [] contentTags = {
@@ -45,6 +54,33 @@ public class TRECWebDocumentIndexer extends DocumentIndexer {
         doc = new Document();
         initFields();
         initWebDoc();
+
+        ArrayList<String> stopWordsList = new ArrayList<String>();
+
+        try {
+            BufferedReader in = new BufferedReader(new FileReader("data\\stopwords.txt"));
+            String str;
+
+            while ((str = in.readLine())!= null) {
+                stopWordsList.add(str);
+            }
+            in.close();
+        } catch (IOException e) {
+            System.out.println("File Read Error");
+        }
+
+        CharArraySet stopWords = new CharArraySet(stopWordsList, false);
+        analizador = new Analyzer() {
+            @Override
+            public TokenStreamComponents createComponents(String s) {
+                Tokenizador tokenizador = new Tokenizador();
+                TokenStream filtros = new LowerCaseFilter(tokenizador);
+                filtros = new StopFilter(filtros, stopWords);
+                SpanishStemmer stemmerEspanol = new SpanishStemmer();
+                filtros = new SnowballFilter(filtros, stemmerEspanol);
+                return new TokenStreamComponents(tokenizador, filtros);
+            }
+        };
     }
 
     private void initFields() {
@@ -77,19 +113,26 @@ public class TRECWebDocumentIndexer extends DocumentIndexer {
 
     public Document createTRECWebDocument(String texto, String ref, String resumen, String title, String url) throws IOException{
         doc.clear();
-        /*
-        StringBuilder constructor = new StringBuilder();
-        String palabra = "";
-        TokenStream tSTexto = analyzer.tokenStream("cuerpo", texto);
-        CharTermAttribute caracter = tSTexto.addAttribute(CharTermAttribute.class);
-        tSTexto.reset();
-        //while (tSTexto.incrementToken()){
-        //    constructor.append(caracter.toString()).append(" ");
-        //}
-        //List<String> palabra = analyze();
-        //String resultado = constructor.toString();
-         */
 
+        texto = Limpiador.limpiadorAcentos(texto);
+        ref = Limpiador.limpiadorAcentos(ref);
+        title = Limpiador.limpiadorAcentos(title);
+
+        StringBuilder nuevoTexto = new StringBuilder();
+
+        TokenStream streamRaices = analizador.tokenStream("Texto", texto);
+
+        OffsetAttribute offsetAttribute = streamRaices.addAttribute(OffsetAttribute.class);
+        CharTermAttribute charTermAttribute = streamRaices.addAttribute(CharTermAttribute.class);
+
+        streamRaices.reset();
+        while (streamRaices.incrementToken()) {
+            int startOffset = offsetAttribute.startOffset();
+            int endOffset = offsetAttribute.endOffset();
+            nuevoTexto.append(charTermAttribute.toString() + ' ');
+        }
+        streamRaices.close();
+        texto = nuevoTexto.toString();
 
         titleField.setStringValue(title);
         textField.setStringValue(texto);
@@ -102,7 +145,6 @@ public class TRECWebDocumentIndexer extends DocumentIndexer {
         doc.add(refField);
         doc.add(resumenField);
         doc.add(urlField);
-        //System.out.println("Adding page: "+ url + " #"  + docid + " Title: " + title);
         return doc;
     }
 
@@ -132,6 +174,8 @@ public class TRECWebDocumentIndexer extends DocumentIndexer {
             String texto = constructorBody.toString();
             String ref = constructorRef.toString();
             String resumen = texto.substring(0, 200);
+
+            title = Limpiador.limpiadorAcentos(title);
 
             createTRECWebDocument(texto, ref, resumen, title, filename);
             addDocumentToIndex(doc);
