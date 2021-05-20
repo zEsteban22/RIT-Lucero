@@ -30,6 +30,7 @@ import static lucene4ir.RetrievalApp.SimModel.PL2;
 
 public class RetrievalApp {
 
+    private final String indexName;
     public RetrievalParams p;
 
     protected Similarity simfn;
@@ -149,15 +150,9 @@ public class RetrievalApp {
             p.runTag = p.model.toLowerCase();
         }
 
-        if (p.resultFile == null){
-            p.resultFile = p.runTag+"_results.res";
-        }
-        fieldsFile = p.fieldsFile;
         qeFile=p.qeFile;
 
-        System.out.println("Path to index: " + p.indexName);
-        System.out.println("Query File: " + p.queryFile);
-        System.out.println("Result File: " + p.resultFile);
+        System.out.println("Path to index: " + indexName);
         System.out.println("Model: " + p.model);
         System.out.println("Max Results: " + p.maxResults);
         if (sim==BM25) {
@@ -169,9 +164,6 @@ public class RetrievalApp {
         }
         else if (sim==LMD){
             System.out.println("mu: " + p.mu);
-        }
-        if (p.fieldsFile!=null){
-            System.out.println("Fields File: " + p.fieldsFile);
         }
         if (p.qeFile!=null){
             System.out.println("QE File: " + p.qeFile);
@@ -185,60 +177,10 @@ public class RetrievalApp {
             analyzer = Lucene4IRConstants.ANALYZER;
         }
     }
-
-    public void processQueryFile(){
-        /*
-        Assumes the query file contains a qno followed by the query terms.
-        One query per line. i.e.
-
-        Q1 hello world
-        Q2 hello hello
-        Q3 hello etc
-         */
-        System.out.println("Processing Query File...");
-        try {
-            BufferedReader br = new BufferedReader(new FileReader(p.queryFile));
-            File file = new File(p.resultFile);
-            FileWriter fw = new FileWriter(file);
-
-            try {
-                String line = br.readLine();
-                while (line != null){
-
-                    String[] parts = line.split(" ");
-                    String qno = parts[0];
-                    String queryTerms = "";
-                    for (int i=1; i<parts.length; i++)
-                        queryTerms = queryTerms + " " + parts[i];
-
-                    ScoreDoc[] scored = runQuery(qno, queryTerms.trim());
-
-                    int n = Math.min(p.maxResults, scored.length);
-
-                    for(int i=0; i<n; i++){
-                        Document doc = searcher.doc(scored[i].doc);
-                        String docno = doc.get("docnum");
-                        fw.write(qno + " QO " + docno + " " + (i+1) + " " + scored[i].score + " " + p.runTag);
-                        fw.write(System.lineSeparator());
-                    }
-                    line = br.readLine();
-                }
-            } finally {
-                br.close();
-                fw.close();
-            }
-        } catch (Exception e){
-            System.out.println(" caught a " + e.getClass() +
-                    "\n with message: " + e.getMessage());
-        }
-    }
-
-    public ScoreDoc[] runQuery(String qno, String queryTerms){
+    public ScoreDoc[] runQuery(String consulta){
         ScoreDoc[] hits = null;
-
-        System.out.println("Query No.: " + qno + " " + queryTerms);
         try {
-            Query query = parser.parse(QueryParser.escape(queryTerms));
+            Query query = parser.parse(QueryParser.escape(consulta));
 
             try {
                 TopDocs results = searcher.search(query, p.maxResults);
@@ -255,19 +197,49 @@ public class RetrievalApp {
         return hits;
     }
 
-    public RetrievalApp(String retrievalParamFile){
+    public static String[][] run(String indexName,String consulta){
+        RetrievalApp app=new RetrievalApp(indexName);
+        String[][]datos;
+        try {
+            Query query = app.parser.parse(QueryParser.escape(consulta));
+            try {
+                TopDocs results = app.searcher.search(query, Integer.MAX_VALUE);
+                datos=new String[results.scoreDocs.length][5];
+                for (int i=0;i<datos.length;i++){
+                    Document d=app.searcher.doc(results.scoreDocs[i].doc);
+                    datos[i][0]=Integer.toString(i+1);
+                    datos[i][1]=d.get("Titulo");
+                    datos[i][2]=d.get("Resumen");
+                    datos[i][3]=Float.toString(results.scoreDocs[i].score);
+                    datos[i][4]=d.get("Url");
+                }
+                return datos;
+            }
+            catch (IOException ioe){
+                ioe.printStackTrace();
+                System.exit(1);
+            }
+        } catch (ParseException pe){
+            pe.printStackTrace();
+            System.exit(1);
+        }
+        return null;
+    }
+    public RetrievalApp(String indexName){
+        this.indexName=indexName;
+        String retrievalParamFile="params/retrieval_params.xml";
         System.out.println("Retrieval App");
         System.out.println("Param File: " + retrievalParamFile);
         readParamsFromFile(retrievalParamFile);
         try {
-            reader = DirectoryReader.open(FSDirectory.open( new File(p.indexName).toPath()) );
+            reader = DirectoryReader.open(FSDirectory.open( new File(indexName).toPath()) );
             searcher = new IndexSearcher(reader);
 
             // create similarity function and parameter
             selectSimilarityFunction(sim);
             searcher.setSimilarity(simfn);
 
-            parser = new QueryParser(Lucene4IRConstants.FIELD_ALL, analyzer);
+            parser = new QueryParser("Texto", analyzer);
 
         } catch (Exception e){
             System.out.println(" caught a " + e.getClass() +
@@ -288,15 +260,12 @@ public class RetrievalApp {
         }
 
         RetrievalApp retriever = new RetrievalApp(retrievalParamFile);
-        retriever.processQueryFile();
+        //retriever.processQueryFile();
     }
 }
 
 @XmlRootElement(name = "RetrievalParams")
 class RetrievalParams {
-    public String indexName;
-    public String queryFile;
-    public String resultFile;
     public String model;
     public int maxResults;
     public float k;
@@ -308,6 +277,5 @@ class RetrievalParams {
     public float delta;
     public String runTag;
     public String tokenFilterFile;
-    public String fieldsFile;
     public String qeFile;
 }

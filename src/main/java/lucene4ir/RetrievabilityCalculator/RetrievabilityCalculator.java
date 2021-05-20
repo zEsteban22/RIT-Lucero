@@ -3,8 +3,8 @@ package lucene4ir.RetrievabilityCalculator;
 import lucene4ir.BiGramGenerator.DumpTermsApp;
 import lucene4ir.RetrievalApp;
 
-import javax.xml.bind.JAXB;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.JAXB;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -196,7 +196,7 @@ public class RetrievabilityCalculator {
         try {
             readParamsFromFile();
             RetrievalApp re = new RetrievalApp(RetrievalParamsFile);
-            re.processQueryFile();
+            //re.processQueryFile();
             initDocumentMap();
             initQueryMap(p.queryFile);
             readRetrievalResults(p.resFile);

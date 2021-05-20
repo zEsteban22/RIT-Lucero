@@ -56,7 +56,7 @@ public abstract class Retriever {
 
             analyzer = Lucene4IRConstants.ANALYZER;
 
-            parser = new QueryParser("content", analyzer);
+            parser = new QueryParser("Texto", analyzer);
 
         } catch (Exception e){
             System.out.println(" caught a " + e.getClass() +
@@ -75,7 +75,7 @@ public abstract class Retriever {
      *
      * @return the list of tokens extracted from the given query.
      *
-     * @throws IOException
+     * @throws IOException _
      */
     List<String> getTokens(String field, String queryTerms, boolean distinctTokens) throws IOException {
 
