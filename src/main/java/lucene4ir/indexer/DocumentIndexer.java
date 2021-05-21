@@ -1,19 +1,25 @@
 package lucene4ir.indexer;
 
+import org.apache.lucene.analysis.custom.CustomAnalyzer;
 import lucene4ir.Lucene4IRConstants;
 import lucene4ir.utils.TokenAnalyzerMaker;
 import org.apache.commons.compress.compressors.z.ZCompressorInputStream;
 
-import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.*;
 //import org.apache.lucene.codecs.simpletext.SimpleTextCodec;
+import org.apache.lucene.analysis.snowball.SnowballFilter;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.tartarus.snowball.ext.SpanishStemmer;
 
+import java.beans.Customizer;
 import java.io.*;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.zip.GZIPInputStream;
 
 /**
@@ -35,13 +41,17 @@ public class DocumentIndexer {
 
     public DocumentIndexer(String indexPath, String tokenFilterFile, boolean positional){
         writer = null;
-        analyzer = Lucene4IRConstants.ANALYZER;
+
         indexPositions=positional;
 
-        if (tokenFilterFile != null){
-            TokenAnalyzerMaker tam = new TokenAnalyzerMaker();
-            analyzer = tam.createAnalyzer(tokenFilterFile);
-        }
+        analyzer = new Analyzer() {
+            @Override
+            protected TokenStreamComponents createComponents(String s) {
+                Tokenizador tokenizador = new Tokenizador();
+                TokenStream filtros = new LowerCaseFilter(tokenizador);
+                return new TokenStreamComponents(tokenizador, filtros);
+            }
+        };
         createWriter(indexPath);
     }
 
@@ -59,7 +69,7 @@ public class DocumentIndexer {
             System.out.println("Indexing to directory '" + indexPath + "'...");
 
             IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
-            iwc.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
+            iwc.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
             //iwc.setCodec(new SimpleTextCodec());
             writer = new IndexWriter(dir, iwc);
 
