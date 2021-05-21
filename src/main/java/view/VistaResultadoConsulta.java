@@ -12,7 +12,7 @@ import java.util.stream.IntStream;
 import java.awt.Desktop;
 import java.net.URI;
 
-public class VistaResultadoConsulta extends JFrame{
+class VistaResultadoConsulta extends JFrame{
     private JTable table1;
     private JButton volverButton;
     private JButton páginaAnteriorButton;
@@ -40,9 +40,7 @@ public class VistaResultadoConsulta extends JFrame{
         setVisible(true);
         setContentPane(_pane);
         setSize(540,465);
-        volverButton.addActionListener((e)->{
-            this.dispose();
-        });
+        volverButton.addActionListener((e)->this.dispose());
         datos=data;
         numeroPágina.setModel(new DefaultComboBoxModel(IntStream.range(1,datos.length/TAMAÑO_PAGINA+2).boxed().toArray()));
         numeroPágina.addActionListener(e->{

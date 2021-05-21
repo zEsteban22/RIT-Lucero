@@ -65,61 +65,7 @@ public class IndexerApp {
 
     public void selectDocumentParser(DocumentModel dm){
         docModel = dm;
-        di = null;
-        switch(dm){
-            case CACM:
-                System.out.println("CACM Document Parser");
-                di = new CACMDocumentIndexer(p.indexName, p.tokenFilterFile, p.recordPositions);
-                break;
-
-            case CLUEWEB:
-                System.out.println("CLUEWEB Document Parser");
-                // TBA
-                System.out.println("To be Implemented");
-                // di = new CLUEWEBDocumentIndexer(p.indexName);
-                System.exit(1);
-                break;
-
-            case TRECNEWS:
-                System.out.println("TRECNEWS");
-                di = new TRECNEWSDocumentIndexer(p.indexName, p.tokenFilterFile, p.recordPositions);
-                break;
-
-            case TRECCC:
-
-                System.out.println("TRECCC");
-                di = new TRECCCDocumentIndexer(p.indexName, p.tokenFilterFile, p.recordPositions);
-                break;
-
-            case TRECTIPSTER:
-                System.out.println("TRECTIPSTER");
-                di = new TRECTipsterDocumentIndexer(p.indexName, p.tokenFilterFile, p.recordPositions);
-                break;
-
-            case TRECAQUAINT:
-                System.out.println("TRECAQUAINT");
-                di = new TRECAquaintDocumentIndexer(p.indexName, p.tokenFilterFile, p.recordPositions);
-                break;
-
-            case TRECWEB:
-                System.out.println("TRECWeb");
-                di = new TRECWebDocumentIndexer(p.indexName, p.tokenFilterFile, p.recordPositions);
-                break;
-
-            case PUBMED:
-                System.out.println("PUBMED");
-                di = new PubMedDocumentIndexer(p.indexName, p.tokenFilterFile, p.recordPositions);
-                break;
-            case COMMONCORE:
-                System.out.println("COMMON CORE");
-                di = new CommonCoreDocumentIndexer(p.indexName, p.tokenFilterFile, p.recordPositions);
-                break;
-
-            default:
-                System.out.println("Default Document Parser");
-
-                break;
-        }
+        di = new TRECWebDocumentIndexer(p.indexName, p.tokenFilterFile, p.recordPositions);
     }
 
 

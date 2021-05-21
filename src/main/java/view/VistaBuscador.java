@@ -4,7 +4,7 @@ import lucene4ir.RetrievalApp;
 
 import javax.swing.*;
 
-public class VistaBuscador extends JFrame{
+class VistaBuscador extends JFrame{
     private JTextField queryTextField;
     private JButton consultarButton;
     private JButton volverButton;
@@ -28,8 +28,6 @@ public class VistaBuscador extends JFrame{
             this.dispose();
             parent.setVisible(true);
         });
-        consultarButton.addActionListener((e)->{
-            consultar();
-        });
+        consultarButton.addActionListener((e)->consultar());
     }
 }

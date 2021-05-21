@@ -9,10 +9,14 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.regex.*;
 
 
-public class VistaIndexador extends JFrame {
+class VistaIndexador extends JFrame {
     private JTextField indexTextField;
     private JTextField textField2;
     private JButton indexarButton;
@@ -44,13 +48,8 @@ public class VistaIndexador extends JFrame {
         setVisible(true);
         setContentPane(_pane);
         setSize(440,150);
-        indexarButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                indexar();
-            }
-        });
-        volverButton.addActionListener((e)->{
+        indexarButton.addActionListener(e -> indexar());
+        volverButton.addActionListener(e->{
             this.dispose();
             parent.setVisible(true);
         });
@@ -64,19 +63,15 @@ public class VistaIndexador extends JFrame {
                 }
             }
         });
-        borrarIndiceButton.addActionListener(new ActionListener() {
-            void deleteDir(File file) {
-                File[] contents = file.listFiles();
-                if (contents != null) {
-                    for (File f : contents) {
-                        deleteDir(f);
-                    }
-                }
-                file.delete();
-            }
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                deleteDir(new File(indexTextField.getText()));
+        borrarIndiceButton.addActionListener(e -> {
+            try {
+                if (!indexTextField.getText().startsWith("src")&&!indexTextField.getText().startsWith("params")&&!indexTextField.getText().startsWith("data"))
+                    Files.walk(new File(indexTextField.getText()).toPath())
+                        .sorted(Comparator.reverseOrder())
+                        .map(Path::toFile)
+                        .forEach(File::delete);
+            } catch (IOException ioException) {
+                ioException.printStackTrace();
             }
         });
     }
