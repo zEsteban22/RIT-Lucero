@@ -201,7 +201,7 @@ public class RetrievalApp {
         RetrievalApp app=new RetrievalApp(indexName);
         String[][]datos;
         try {
-            Query query = app.parser.parse(QueryParser.escape(consulta));
+            Query query = app.parser.parse(consulta);
             try {
                 TopDocs results = app.searcher.search(query, Integer.MAX_VALUE);
                 datos=new String[results.scoreDocs.length][5];

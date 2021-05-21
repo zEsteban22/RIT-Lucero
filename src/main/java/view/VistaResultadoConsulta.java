@@ -44,7 +44,7 @@ public class VistaResultadoConsulta extends JFrame{
             this.dispose();
         });
         datos=data;
-        numeroPágina.setModel(new DefaultComboBoxModel(IntStream.range(1,datos.length/TAMAÑO_PAGINA).boxed().toArray()));
+        numeroPágina.setModel(new DefaultComboBoxModel(IntStream.range(1,datos.length/TAMAÑO_PAGINA+2).boxed().toArray()));
         numeroPágina.addActionListener(e->{
             int from=numeroPágina.getSelectedIndex()*TAMAÑO_PAGINA;
             table1.setModel(new TableModel(Arrays.copyOfRange(datos,from,from+TAMAÑO_PAGINA),headers));

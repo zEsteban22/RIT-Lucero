@@ -26,7 +26,7 @@ import java.util.zip.GZIPInputStream;
 /**
  * Indexer for TRECWEB test collections relying on JSOUP.
  *
- * Created by kojayboy 28/07/2017.
+ * Created by Ary-El 20/05/2021.
  */
 public class TRECWebDocumentIndexer extends DocumentIndexer {
 
@@ -84,23 +84,11 @@ public class TRECWebDocumentIndexer extends DocumentIndexer {
     }
 
     private void initFields() {
-        /*
-    }
-        docnumField = new StringField(Lucene4IRConstants.FIELD_DOCNUM, "", Field.Store.YES);
-        if(indexPositions){
-            titleField = new TermVectorEnabledTextField(Lucene4IRConstants.FIELD_TITLE, "", Field.Store.YES);
-            textField = new TermVectorEnabledTextField(Lucene4IRConstants.FIELD_CONTENT, "", Field.Store.YES);
-            allField = new TermVectorEnabledTextField(Lucene4IRConstants.FIELD_ALL, "", Field.Store.YES);
-            urlField = new TermVectorEnabledTextField(Lucene4IRConstants.FIELD_URL, "", Field.Store.YES);
-            dochdrField = new TermVectorEnabledTextField(Lucene4IRConstants.FIELD_DOCHDR, "", Field.Store.YES);
-        }
-        else {*/
         titleField = new TextField("Titulo", "", Field.Store.YES);
         textField = new TextField("Texto", "", Field.Store.YES);
         refField = new TextField("Ref", "", Field.Store.YES);
         urlField = new TextField("Url", "", Field.Store.YES);
         resumenField = new TextField("Resumen", "", Field.Store.YES);
-        //}
     }
 
     private void initWebDoc() {

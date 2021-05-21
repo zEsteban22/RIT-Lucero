@@ -11,12 +11,14 @@ import java.awt.event.KeyEvent;
 import java.io.File;
 import java.util.regex.*;
 
+
 public class VistaIndexador extends JFrame {
     private JTextField indexTextField;
     private JTextField textField2;
     private JButton indexarButton;
     private JButton volverButton;
     private JPanel _pane;
+    private JButton borrarIndiceButton;
 
     private void indexar(){
         File directorioAIndexar=new File(textField2.getText());
@@ -60,6 +62,21 @@ public class VistaIndexador extends JFrame {
                 } else {
                     e.consume();
                 }
+            }
+        });
+        borrarIndiceButton.addActionListener(new ActionListener() {
+            void deleteDir(File file) {
+                File[] contents = file.listFiles();
+                if (contents != null) {
+                    for (File f : contents) {
+                        deleteDir(f);
+                    }
+                }
+                file.delete();
+            }
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                deleteDir(new File(indexTextField.getText()));
             }
         });
     }
