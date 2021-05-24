@@ -199,9 +199,19 @@ public class RetrievalApp {
 
     public static String[][] run(String indexName,String consulta){
         RetrievalApp app=new RetrievalApp(indexName);
+        Analizadores a=new Analizadores();
+        String[]campos=consulta.trim().split(":");
+        String nuevaConsulta="";
+        for(int i=0;i<campos.length;i+=2){
+            if (campos[i].contains("Ref") || campos[i].contains("Titulo")){
+                    nuevaConsulta+=campos[i]+a.
+            }
+        }
+        consulta = .matcher(consulta).group()(funciontokenizadora());
         String[][]datos;
         try {
             Query query = app.parser.parse(consulta);
+            consulta.
             try {
                 TopDocs results = app.searcher.search(query, Integer.MAX_VALUE);
                 datos=new String[results.scoreDocs.length][5];
@@ -225,6 +235,7 @@ public class RetrievalApp {
         }
         return null;
     }
+
     public RetrievalApp(String indexName){
         this.indexName=indexName;
         String retrievalParamFile="params/retrieval_params.xml";
