@@ -99,6 +99,7 @@ public class IndexerApp {
         p=new IndexParams();
         p.fileList=fileList;
         p.indexName=indexName;
+        di = new DocumentIndexer(p.indexName);
     }
 
     public void indexDocumentsFromFile(String filename){
