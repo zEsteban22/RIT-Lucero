@@ -29,6 +29,7 @@ import org.tartarus.snowball.ext.SpanishStemmer;
 import java.io.*;
 import java.util.ArrayList;
 
+import static lucene4ir.Limpiador.limpiarGeneral;
 import static lucene4ir.RetrievalApp.SimModel.BM25;
 import static lucene4ir.RetrievalApp.SimModel.LMD;
 import static lucene4ir.RetrievalApp.SimModel.PL2;
@@ -185,28 +186,10 @@ public class RetrievalApp {
             analyzer = Lucene4IRConstants.ANALYZER;
         }
     }
-    public ScoreDoc[] runQuery(String consulta){
-        ScoreDoc[] hits = null;
-        try {
-            Query query = parser.parse(QueryParser.escape(consulta));
-
-            try {
-                TopDocs results = searcher.search(query, p.maxResults);
-                hits = results.scoreDocs;
-            }
-            catch (IOException ioe){
-                ioe.printStackTrace();
-                System.exit(1);
-            }
-        } catch (ParseException pe){
-            pe.printStackTrace();
-            System.exit(1);
-        }
-        return hits;
-    }
-
+    //
     public static String[][] run(String indexName,String consulta){
         RetrievalApp app=new RetrievalApp(indexName);
+        consulta = limpiarGeneral(consulta);
         String[][]datos;
         try {
             Query query = app.parser.parse(consulta);
@@ -236,45 +219,7 @@ public class RetrievalApp {
     public RetrievalApp(String indexName){
         this.indexName=indexName;
 
-        ArrayList<String> stopWordsList = new ArrayList<String>();
-
-        try {
-            BufferedReader in = new BufferedReader(new FileReader("data\\stopwords.txt"));
-            String str;
-
-            while ((str = in.readLine())!= null) {
-                stopWordsList.add(str);
-            }
-            in.close();
-        } catch (IOException e) {
-            System.out.println("File Read Error");
-        }
-
-        CharArraySet stopWords = new CharArraySet(stopWordsList, false);
-        analizadorBody = new Analyzer() {
-            @Override
-            public TokenStreamComponents createComponents(String s) {
-                Tokenizador tokenizador = new Tokenizador();
-                TokenStream filtros = new LowerCaseFilter(tokenizador);
-                filtros = new StopFilter(filtros, stopWords);
-                SpanishStemmer stemmerEspanol = new SpanishStemmer();
-                filtros = new SnowballFilter(filtros, stemmerEspanol);
-                return new TokenStreamComponents(tokenizador, filtros);
-            }
-        };
-
-        analizadorRef = new Analyzer() {
-            @Override
-            protected TokenStreamComponents createComponents(String s) {
-                Tokenizador tokenizador = new Tokenizador();
-                TokenStream filtros = new LowerCaseFilter(tokenizador);
-                return new TokenStreamComponents(tokenizador, filtros);
-            }
-        };
-
         String retrievalParamFile="params/retrieval_params.xml";
-        System.out.println("Retrieval App");
-        System.out.println("Param File: " + retrievalParamFile);
         readParamsFromFile(retrievalParamFile);
         try {
             reader = DirectoryReader.open(FSDirectory.open( new File(indexName).toPath()) );

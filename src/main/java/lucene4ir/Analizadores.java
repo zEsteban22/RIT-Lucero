@@ -58,27 +58,36 @@ public class Analizadores {
 
     }
 
-    public String realizarStemming(String texto){
+    private String tokenStreamToString(TokenStream tokenStream){
         StringBuilder nuevoTexto = new StringBuilder();
 
-        TokenStream streamRaices = analizadorBody.tokenStream("Texto", texto);
-
-        OffsetAttribute offsetAttribute = streamRaices.addAttribute(OffsetAttribute.class);
-        CharTermAttribute charTermAttribute = streamRaices.addAttribute(CharTermAttribute.class);
+        OffsetAttribute offsetAttribute = tokenStream.addAttribute(OffsetAttribute.class);
+        CharTermAttribute charTermAttribute = tokenStream.addAttribute(CharTermAttribute.class);
 
         try {
-            streamRaices.reset();
+            tokenStream.reset();
 
-            while (streamRaices.incrementToken()) {
+            while (tokenStream.incrementToken()) {
                 int startOffset = offsetAttribute.startOffset();
                 int endOffset = offsetAttribute.endOffset();
                 nuevoTexto.append(charTermAttribute.toString() + ' ');
             }
-            streamRaices.close();
+            tokenStream.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
         return nuevoTexto.toString();
+    }
+    //Para body/text
+    public String realizarStemming(String texto){
+        TokenStream streamRaices = analizadorBody.tokenStream("Texto", texto);
+        return tokenStreamToString(streamRaices);
+    }
+
+    //Para ref/title
+    public String realizarTokenizacion(String texto){
+        TokenStream streamTokens = analizadorRef.tokenStream("Ref", texto);
+        return tokenStreamToString(streamTokens);
     }
 
 }

@@ -1,6 +1,7 @@
 package lucene4ir.indexer;
 
 import lucene4ir.Analizadores;
+import lucene4ir.Limpiador;
 import org.apache.lucene.analysis.custom.CustomAnalyzer;
 import lucene4ir.Lucene4IRConstants;
 import lucene4ir.utils.TokenAnalyzerMaker;
@@ -9,11 +10,17 @@ import org.apache.commons.compress.compressors.z.ZCompressorInputStream;
 import org.apache.lucene.analysis.*;
 //import org.apache.lucene.codecs.simpletext.SimpleTextCodec;
 import org.apache.lucene.analysis.snowball.SnowballFilter;
+import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
+import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field;
+import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Element;
 import org.tartarus.snowball.ext.SpanishStemmer;
 
 import java.beans.Customizer;
@@ -21,6 +28,7 @@ import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.ListIterator;
 import java.util.zip.GZIPInputStream;
 
 /**
@@ -34,37 +42,20 @@ import java.util.zip.GZIPInputStream;
  */
 public class DocumentIndexer {
 
-    protected boolean indexPositions;
     public IndexWriter writer;
-    public Analyzer analyzer;
+    public Analizadores analizadores;
 
     public DocumentIndexer(){};
 
-    public DocumentIndexer(String indexPath, String tokenFilterFile, boolean positional){
-        writer = null;
+    public DocumentIndexer(String indexPath){
 
-        indexPositions=positional;
-
-        Analizadores analizadores = new Analizadores();
-
-        analyzer = analizadores.analizadorRef;
-        createWriter(indexPath);
-    }
-
-
-    public void createWriter(String indexPath){
-        /*
-        The indexPath specifies where to create the index
-         */
-
-        // I am can imagine that there are lots of ways to create indexers -
-        // We could add in some parameters to customize its creation
+        analizadores = new Analizadores();
 
         try {
             Directory dir = FSDirectory.open(Paths.get(indexPath));
             System.out.println("Indexing to directory '" + indexPath + "'...");
 
-            IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
+            IndexWriterConfig iwc = new IndexWriterConfig(analizadores.analizadorRef);
             iwc.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
             //iwc.setCodec(new SimpleTextCodec());
             writer = new IndexWriter(dir, iwc);
@@ -75,7 +66,7 @@ public class DocumentIndexer {
         }
     }
 
-    public void addDocumentToIndex(Document doc){
+    public void anadirDocumentoIndex(Document doc){
         try {
             writer.addDocument(doc);
         } catch (IOException e){
@@ -84,43 +75,63 @@ public class DocumentIndexer {
         }
     }
 
-    public void indexDocumentsFromFile(String filename){
-        /* to be implemented in sub classess*/
-    };
+    public Document crearDocumento(String texto, String ref, String resumen, String title, String url) throws IOException{
 
-    protected BufferedReader openDocumentFile(String filename){
-        BufferedReader br = null;
-        try {
-            if(filename.endsWith(".gz")) {
-                InputStream fileStream = new FileInputStream(filename);
-                InputStream gzipStream = new GZIPInputStream(fileStream);
-                Reader decoder = new InputStreamReader(gzipStream, "UTF-8");
-                br = new BufferedReader(decoder);
-            }
-            else
-            {
-                // For the weirdness that is TREC collections.
-                if (filename.endsWith(".Z") || filename.endsWith(".0Z") || filename.endsWith(".1Z") || filename.endsWith(".2Z")) {
-                    InputStream fileStream = new FileInputStream(filename);
-                    //InputStream zipStream = new ZCompressorInputStream(fileStream);
-                    ZCompressorInputStream zipStream = new ZCompressorInputStream(fileStream);
-                    Reader decoder = new InputStreamReader(zipStream, "UTF-8");
-                    br = new BufferedReader(decoder);
-                }
-                else
-                    br = new BufferedReader(new FileReader(filename));
-            }
+        texto = Limpiador.limpiadorAcentos(texto);
+        ref = Limpiador.limpiadorAcentos(ref);
+        title = Limpiador.limpiadorAcentos(title);
 
+        texto = analizadores.realizarStemming(texto);
 
+        TextField titleField = new TextField("Titulo", title, Field.Store.YES);
+        TextField textField = new TextField("Texto", texto, Field.Store.YES);
+        TextField refField = new TextField("Ref", ref, Field.Store.YES);
+        TextField resumenField = new TextField("Resumen", resumen, Field.Store.YES);
+        TextField urlField = new TextField("Url", url, Field.Store.YES);
 
+        Document doc = new Document();
 
-        } catch (Exception e){
-            e.printStackTrace();
-            System.exit(1);
-        }
-        return br;
+        doc.add(titleField);
+        doc.add(textField);
+        doc.add(refField);
+        doc.add(resumenField);
+        doc.add(urlField);
+        return doc;
     }
 
+    public void indexDocumentsFromFile(String filename){
+
+        File input = new File(filename);
+        try {
+            org.jsoup.nodes.Document documentoHTML = Jsoup.parse(input, "UTF-8", "");
+
+            StringBuilder constructorBody = new StringBuilder();
+            StringBuilder constructorRef = new StringBuilder();
+            StringBuilder constructorTitulo = new StringBuilder();
+
+            ListIterator<Element> iteradorBody = documentoHTML.getElementsByTag("p").listIterator();
+            while (iteradorBody.hasNext())
+                constructorBody.append(iteradorBody.next().text()).append(" ");
+
+            ListIterator<Element> iteradorRef = documentoHTML.getElementsByTag("a").listIterator();
+            while (iteradorRef.hasNext())
+                constructorRef.append(iteradorRef.next().text()).append(" ");
+
+            ListIterator<Element> iteradorTitulo = documentoHTML.getElementsByTag("title").listIterator();
+            while (iteradorTitulo.hasNext())
+                constructorTitulo.append(iteradorTitulo.next().text()).append(" ");
+
+            String titulo = constructorTitulo.toString();
+            String texto = constructorBody.toString();
+            String ref = constructorRef.toString();
+            String resumen = texto.substring(0, 200);
+
+            Document doc = crearDocumento(texto, ref, resumen, titulo, filename);
+            anadirDocumentoIndex(doc);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     public void finished(){
         try {

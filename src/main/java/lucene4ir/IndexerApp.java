@@ -35,49 +35,20 @@ public class IndexerApp {
 
     public lucene4ir.indexer.DocumentIndexer di;
 
-
-
-    private enum DocumentModel {
-        CACM, CLUEWEB, TRECNEWS, TRECCC, TRECAQUAINT, TRECWEB, TRECTIPSTER, PUBMED , COMMONCORE
-    }
-    private final String DEFAULT_TOKENFILTERFILE="params/index/example_01.xml";
-
-    private DocumentModel docModel;
-
     public IndexerApp(){
         System.out.println("Indexer");
     }
 
-    private void setDocParser(String val){
 
-        try {
-            docModel = DocumentModel.valueOf(p.indexType.toUpperCase());
-        } catch (Exception e){
-            System.out.println("Document Parser Not Recognized - Setting to Default");
-            System.out.println("Possible Document Parsers are:");
-            for(DocumentModel value: DocumentModel.values()){
-                System.out.println("<indexType>"+value.name()+"</indexType>");
-            }
-            e.printStackTrace();
-            System.exit(1);
-        }
+    public void selectDocumentParser(){
+        di = new DocumentIndexer(p.indexName);//TRECWebDocumentIndexer(p.indexName, p.tokenFilterFile, p.recordPositions);
     }
 
-    public void selectDocumentParser(DocumentModel dm){
-        docModel = dm;
-        di = new TRECWebDocumentIndexer(p.indexName, p.tokenFilterFile, p.recordPositions);
-    }
-
-
-
-
-    public ArrayList<String> readFileListFromFile(){
+    public ArrayList<String> readFileListFromFile(String filename){
         /*
             Takes the name of a file (filename), which contains a list of files.
             Returns an array of the filenames (to be indexed)
          */
-
-        String filename = p.fileList;
 
         ArrayList<String> files = new ArrayList<String>();
         File aFile;
@@ -124,59 +95,29 @@ public class IndexerApp {
 
     }
 
-    public IndexerApp(String indexParamFile){
-        System.out.println("Indexer App");
-        readIndexParamsFromFile(indexParamFile);
-        setDocParser(p.indexType);
-        selectDocumentParser(docModel);
-    }
-
     public IndexerApp(String indexName, String fileList){
         p=new IndexParams();
         p.fileList=fileList;
         p.indexName=indexName;
-        p.indexType="TRECWEB";
-        p.tokenFilterFile=DEFAULT_TOKENFILTERFILE;
-        p.recordPositions=true;
-        setDocParser(p.indexType);
-        selectDocumentParser(docModel);
     }
 
     public void indexDocumentsFromFile(String filename){
         di.indexDocumentsFromFile(filename);
     }
 
-    public void finished(){
-        try {
-            di.writer.forceMerge(1);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        di.finished();
-        try {
-            IndexReader reader = DirectoryReader.open(FSDirectory.open(Paths.get(p.indexName)));
-            long numDocs = reader.numDocs();
-            System.out.println("Cantidad de documentos indexados: " + numDocs);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-
-    }
-
     public static void run(String indexName,String fileList)throws Exception{
         IndexerApp app=new IndexerApp(indexName,fileList);
         try {
-            for (String f : app.readFileListFromFile()) {
+            for (String f : app.readFileListFromFile(fileList)) {
                 System.out.println("Indexando archivo: " +  f);
                 app.indexDocumentsFromFile(f);
             }
         } catch (Exception e){
             throw e;
         }
-        app.finished();
+        app.di.finished();
     }
-
+/*
     public static void main(String []args) {
 
 
@@ -237,7 +178,7 @@ public class IndexerApp {
 
 
     }
-
+*/
 }
 
 
