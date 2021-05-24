@@ -16,11 +16,6 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.similarities.*;
 import org.apache.lucene.search.similarities.LMSimilarity.CollectionModel;
 import org.apache.lucene.store.FSDirectory;
-
-import lucene4ir.similarity.SMARTBNNBNNSimilarity;
-import lucene4ir.similarity.OKAPIBM25Similarity;
-import lucene4ir.similarity.BM25LSimilarity;
-import lucene4ir.similarity.BM25Similarity;
 import lucene4ir.utils.TokenAnalyzerMaker;
 
 import jakarta.xml.bind.JAXB;
@@ -29,6 +24,8 @@ import org.tartarus.snowball.ext.SpanishStemmer;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static lucene4ir.RetrievalApp.SimModel.BM25;
 import static lucene4ir.RetrievalApp.SimModel.LMD;
@@ -73,56 +70,7 @@ public class RetrievalApp {
 
     public void selectSimilarityFunction(SimModel sim){
         colModel = null;
-        switch(sim){
-            case OKAPIBM25:
-                System.out.println("OKAPI BM25 Similarity Function");
-                simfn = new OKAPIBM25Similarity(1.2f, 0.75f);
-                break;
-            case SMARTBNNBNN:
-                System.out.println("SMART bnn.bnn Similarity Function");
-                simfn = new SMARTBNNBNNSimilarity();
-            case BM25:
-                System.out.println("BM25 Similarity Function");
-                simfn = new BM25Similarity(p.k, p.b);
-                break;
-            case BM25L:
-                System.out.println("BM25L Similarity Function");
-                simfn = new BM25LSimilarity(p.k, p.b, p.delta);
-                break;
-            case LMD:
-                System.out.println("LM Dirichlet Similarity Function");
-                colModel = new LMSimilarity.DefaultCollectionModel();
-                simfn = new LMDirichletSimilarity(colModel, p.mu);
-                break;
-
-            case LMJ:
-                System.out.println("LM Jelinek Mercer Similarity Function");
-                colModel = new LMSimilarity.DefaultCollectionModel();
-                simfn = new LMJelinekMercerSimilarity(colModel, p.lam);
-                break;
-
-            case PL2:
-                System.out.println("PL2 Similarity Function (?)");
-                BasicModel bm = new BasicModelP();
-                AfterEffect ae = new AfterEffectL();
-                Normalization nn = new NormalizationH2(p.c);
-                simfn = new DFRSimilarity(bm, ae, nn);
-                break;
-
-            case DFR:
-                System.out.println("DFR Similarity Function with no after effect (?)");
-                BasicModel bmd = new BasicModelD();
-                AfterEffect aen = new AfterEffect.NoAfterEffect();
-                Normalization nh1 = new NormalizationH1();
-                simfn = new DFRSimilarity(bmd, aen, nh1);
-                break;
-
-            default:
-                System.out.println("Default Similarity Function");
-                simfn = new BM25Similarity();
-
-                break;
-        }
+        simfn = new BM25Similarity();
     }
 
     public void readParamsFromFile(String paramFile){
@@ -210,22 +158,19 @@ public class RetrievalApp {
         RetrievalApp app=new RetrievalApp(indexName);
         Analizadores a=new Analizadores();
         String[][]datos;
+        String tmp=consulta;
         try {
-            consulta=app.parser.parse(consulta).toString();
-            consulta=new Rewriter("(Ref|Titulo):(\"[^\\\"]*\"|\\w+)") {
-                @Override
-                public String replacement() {
-                    String t=a.realizarTokenizacion(group(2).replaceAll("\\\"",""));
-                    return group(1)+":\\\""+t.trim()+"\\\"";
-                }
-            }.rewrite(consulta);
-            consulta=new Rewriter("Texto:(\"[^\\\"]*\"|\\w+)"){
-                @Override
-                public String replacement(){
-                    String t=a.realizarStemming(group(1).replaceAll("\\\"",""));
-                    return "Texto:"+"\\\""+t.trim()+"\\\"";
-                }
-            }.rewrite(consulta);
+            tmp=app.parser.parse(consulta).toString();
+            Matcher m=Pattern.compile("(Ref|Titulo):(\"[^\\\"]*\"|\\w+)").matcher(tmp);
+            while(m.find()){
+                String t=m.group(2);
+                consulta=consulta.replace(t,a.realizarTokenizacion(t).trim());
+            }
+            m=Pattern.compile("Texto:(\"[^\\\"]*\"|\\w+)").matcher(tmp);
+            while (m.find()){
+                String b=m.group(1);
+                consulta=consulta.replace(b,a.realizarStemming(b).trim());
+            }
             Query query = app.parser.parse(consulta);
             try {
                 TopDocs results = app.searcher.search(query, Integer.MAX_VALUE);
