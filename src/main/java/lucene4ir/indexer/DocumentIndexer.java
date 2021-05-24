@@ -1,5 +1,6 @@
 package lucene4ir.indexer;
 
+import lucene4ir.Analizadores;
 import org.apache.lucene.analysis.custom.CustomAnalyzer;
 import lucene4ir.Lucene4IRConstants;
 import lucene4ir.utils.TokenAnalyzerMaker;
@@ -44,14 +45,9 @@ public class DocumentIndexer {
 
         indexPositions=positional;
 
-        analyzer = new Analyzer() {
-            @Override
-            protected TokenStreamComponents createComponents(String s) {
-                Tokenizador tokenizador = new Tokenizador();
-                TokenStream filtros = new LowerCaseFilter(tokenizador);
-                return new TokenStreamComponents(tokenizador, filtros);
-            }
-        };
+        Analizadores analizadores = new Analizadores();
+
+        analyzer = analizadores.analizadorRef;
         createWriter(indexPath);
     }
 

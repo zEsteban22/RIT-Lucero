@@ -1,6 +1,8 @@
 package lucene4ir;
 
-import org.apache.lucene.analysis.Analyzer;
+import lucene4ir.indexer.Tokenizador;
+import org.apache.lucene.analysis.*;
+import org.apache.lucene.analysis.snowball.SnowballFilter;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
@@ -22,7 +24,10 @@ import lucene4ir.utils.TokenAnalyzerMaker;
 
 import jakarta.xml.bind.JAXB;
 import jakarta.xml.bind.annotation.XmlRootElement;
+import org.tartarus.snowball.ext.SpanishStemmer;
+
 import java.io.*;
+import java.util.ArrayList;
 
 import static lucene4ir.RetrievalApp.SimModel.BM25;
 import static lucene4ir.RetrievalApp.SimModel.LMD;
@@ -41,6 +46,9 @@ public class RetrievalApp {
     protected CollectionModel colModel;
     protected String fieldsFile;
     protected String qeFile;
+
+    private Analyzer analizadorBody;
+    private Analyzer analizadorRef;
 
     protected enum SimModel {
         DEF, BM25, BM25L, LMD, LMJ, PL2, TFIDF,
@@ -238,6 +246,43 @@ public class RetrievalApp {
 
     public RetrievalApp(String indexName){
         this.indexName=indexName;
+
+        ArrayList<String> stopWordsList = new ArrayList<String>();
+
+        try {
+            BufferedReader in = new BufferedReader(new FileReader("data\\stopwords.txt"));
+            String str;
+
+            while ((str = in.readLine())!= null) {
+                stopWordsList.add(str);
+            }
+            in.close();
+        } catch (IOException e) {
+            System.out.println("File Read Error");
+        }
+
+        CharArraySet stopWords = new CharArraySet(stopWordsList, false);
+        analizadorBody = new Analyzer() {
+            @Override
+            public TokenStreamComponents createComponents(String s) {
+                Tokenizador tokenizador = new Tokenizador();
+                TokenStream filtros = new LowerCaseFilter(tokenizador);
+                filtros = new StopFilter(filtros, stopWords);
+                SpanishStemmer stemmerEspanol = new SpanishStemmer();
+                filtros = new SnowballFilter(filtros, stemmerEspanol);
+                return new TokenStreamComponents(tokenizador, filtros);
+            }
+        };
+
+        analizadorRef = new Analyzer() {
+            @Override
+            protected TokenStreamComponents createComponents(String s) {
+                Tokenizador tokenizador = new Tokenizador();
+                TokenStream filtros = new LowerCaseFilter(tokenizador);
+                return new TokenStreamComponents(tokenizador, filtros);
+            }
+        };
+
         String retrievalParamFile="params/retrieval_params.xml";
         System.out.println("Retrieval App");
         System.out.println("Param File: " + retrievalParamFile);
